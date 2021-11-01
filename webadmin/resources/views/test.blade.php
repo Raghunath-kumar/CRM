@@ -1,156 +1,258 @@
+  
 <?php
-$sponser="";
-if(isset($_GET['sponser']))
-{
-    $sponser=$_GET['sponser'];
+
+require "conn.php";
+ $action=$_POST['action'];
+ 
+if($action=="registration")
+	{
+	    
+	    
+	 if($_POST['cid'] && $_POST['name'] && $_POST['mobile'] && $_POST['aadhar'] && isSponserOk($_POST['cid']))
+	 {
+	     
+	 $cid=strtoupper($_POST['cid']);
+	 $name=$_POST['name'];
+	 $mobile=$_POST['mobile'];
+	 $aadhar=$_POST['aadhar'];
+	 require("./conn.php");
+     
+		    
+			$pass=rand(111111,999999);
+			$tpass=rand(1111,9999);
+			$tmp=rand(100000,999999);
+			$tmp1=substr($mobile,6,10);
+			$newcid="MPM".$tmp1.$tmp;
+			
+			$sql5="select * from parent_child where cid='$cid'";
+	        $smt5=mysqli_query($conn,$sql5);
+	        $rs5=mysqli_fetch_assoc($smt5);
+	
+			if($cid=="NULL")
+			{
+			$unilevel=0;
+			$dna="/".$cid;
+			}
+			else
+			{
+			$unilevel=$rs5['unilevel']+1;
+			$dna=$rs5['dna']."/".$newcid;	
+			} 
+			
+			$sql="insert into candidate(cid,pid,
+			jdate,
+			sponser_id,
+			unilevel,
+			dna,
+			name,
+			aadharnumber,
+			mobile,
+			password,
+			transaction_pass,
+			activation_date,
+			rank,
+			pkg_amt,
+			bv,
+			wallet,
+			status)values('$newcid','$cid',CURDATE(),'$cid','$unilevel','$dna','$name','$aadhar','$mobile','$pass','$tpass',CURDATE(),'Associate','750','750','0','0')";
+		
+			$result=mysqli_query($conn,$sql);
+			if($result)
+			{
+			
+			updateRelation($cid,$newcid,$cid);
+			
+			$smstext="Dear ".$name.",\nThank you for joining MPMLife.\nCard No- ".$newcid."\nSecurity Code- ".$pass."\nTransaction Password- ".$tpass."\nwww.mpmlife.com";
+			
+			echo $smstext;
+			
+			$newcid=$newcid." ";
+			$pass=$pass." ";
+			$tpass=$tpass."\n";
+			
+			$sms="Dear ".$name.", Thank you for joining MPMLife.Card No- ".$newcid."Security Code- ".$pass."Transaction Password- ".$tpass."www.mpmlife.com
+";
+			send_sms($mobile,$sms);
+			}
+			else
+			{
+		    echo "Sorry ID not created, Your mobile may be allready registered.".mysqli_error($conn);
+			}
+			
+			
+		}
+	 else
+		{
+			 echo "Invalid Data/Sponser, Please check and try again.".mysqli_error($conn);
+		}
 }
+else if ($action=="save-member")
+  {
+	        $cid=$_POST['cid'];
+			$name=$_POST['name'];
+			$gardian=$_POST['gardian'];
+			$address=$_POST['address'];
+			$district=$_POST['district'];
+			$state=$_POST['state'];
+			$email=$_POST['email'];
+			$mobile=$_POST['mobile'];
+			$status=$_POST['status'];
+			
+			$sql="update candidate set name='$name',guardian='$gardian',address='$address',district='$district',state='$state',email='$email',mobile='$mobile',status='$status' where cid='$cid'";
+			
+			mysqli_query($conn,$sql);
+			if(mysql_affected_rows()>0)
+			{
+				echo "Member Details Updated Successflly.";
+			}
+			
+			
+  }
+ 
+////Functions*.....
+
+function paySponser($cid,$amt)
+{
+    if($cid!=NULL ||$cid!="")
+    {
+      $mid=$cid;
+      $sql="select sponser_id as sponser from candidate WHERE cid='$cid'";
+      $smt=mysqli_query($conn,$sql);
+      $rs=mysqli_fetch_assoc($smt);
+      $sponser_id=$rs['sponser'];
+      date_default_timezone_set('Asia/Kolkata');
+      $ctime= date("H:i:s"); 
+      $sql2="INSERT INTO  tbl_sposor_income(trans_dt,trans_time,cid,team_id,total_income)VALUES(CURDATE(),'$ctime','$sponser_id','$mid','$amt')";
+    			
+			mysqli_query($conn,$sql2);
+			if(mysql_affected_rows()>0)
+			{	
+		      $sql1="update  candidate set wallet=wallet+$amt where cid='$sponser_id'";	
+	           mysqli_query($conn,$sql1);
+			}
+			else{
+				echo mysql_error($conn);
+			}
+    }
+  
+}
+ 
+ 
+ function getSponser($cid)
+{
+	require("./conn.php");
+  $sql="select sponser_id as sponser from candidate where cid='$cid'";
+  $smt=mysqli_query($conn,$sql);
+  $rs=mysqli_fetch_assoc($smt);
+  return($rs['sponser']);
+}
+
+function isSponser($pid)
+   {
+     require("./conn.php");
+     $sql="select * from candidate where cid='$pid'";
+     $smt=mysqli_query($conn,$sql);
+     if($rs=mysqli_fetch_assoc($smt))
+     {
+      return(true);
+     }
+     return(false);
+     
+   }
+
+function isRegister($mobile)
+   {
+     require("./conn.php");
+     $sql="select * from candidate where mobile='$mobile'";
+     $smt=mysqli_query($conn,$sql);
+     if($rs=mysqli_fetch_assoc($smt))
+     {
+      return(true);
+     }
+     return(false);
+     
+   }
+   
+   function isSponserOk($cid)
+   {
+     require("./conn.php");
+     $sql="select * from candidate where cid='$cid' and status='1'";
+     $smt=mysqli_query($conn,$sql);
+     if(mysqli_num_rows($smt))
+      return(true);
+    else
+     return(false);
+     
+   }
+
+function isAvailable($pid,$side)
+   {
+     require("./conn.php");
+     $sql="select * from parent_child where cid='$pid'";
+     $smt=mysqli_query($conn,$sql);
+     if($rs=mysqli_fetch_assoc($smt))
+     {
+          if($side=="Left" && $rs['lcid']=="NULL")
+           return(true);
+          else if($side=="Right" && $rs['rcid']=="NULL")
+           return(true);
+          else
+           return(false);
+     }
+     return(false);
+     
+   }
+
+
+function updateRelation($pid,$cid,$sponser)
+{  
+	require("./conn.php");
+    $sql="select * from parent_child where cid='$pid'";
+	$smt=mysqli_query($conn,$sql);
+	$rs=mysqli_fetch_assoc($smt);
+	
+			if($pid=="NULL")
+			{
+			$unilevel=0;
+			$dna="/".$cid;
+			}
+			else
+			{
+			$unilevel=$rs['unilevel']+1;
+			$dna=$rs['dna']."/".$cid;	
+			} 
+		$sql="INSERT INTO parent_child (doj,cid,pid,unilevel,dna,sponser)VALUES (SYSDATE(),'$cid','$sponser','$unilevel','$dna','$sponser')";
+		mysqli_query($conn,$sql);
+				
+			
+}
+
+function getCurrentId()
+{
+require("./conn.php");
+$sql="SELECT max(cid) as cid from candidate";
+$smt=mysqli_query($conn,$sql);
+$rs=mysqli_fetch_assoc($smt);
+$curid=$rs['cid'];
+return $curid;
+}
+
+function send_sms($mob,$smstext)
+    {
+  	    $url="http://bhashsms.com/api/sendmsg.php";
+		$user="prakashgroup";
+		$password="7544991791";
+		$snderid="MPMIND";
+		$mobile=$mob;
+		$msg=$smstext;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, 'user='.$user.'&pass='.$password.'&sender='.$snderid.'&phone='.$mobile.'&text='.$msg.'&priority=ndnd&stype=normal');
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($ch);
+	
+     }
+     
 ?>
-<!DOCTYPE html>
-<head>
-<title>New MPMLife Card - Registration </title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="" />
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
-<!-- bootstrap-css -->
-<link rel="stylesheet" href="css/bootstrap.min.css" >
-<!-- //bootstrap-css -->
-<!-- Custom CSS -->
-<link href="css/style.css" rel='stylesheet' type='text/css' />
-<link href="css/style-responsive.css" rel="stylesheet"/>
-<!-- font CSS -->
-<link href='//fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
-<!-- font-awesome icons -->
-<link rel="stylesheet" href="css/font.css" type="text/css"/>
-<link href="css/font-awesome.css" rel="stylesheet"> 
-<!-- //font-awesome icons -->
-<script src="js/jquery2.0.3.min.js"></script>
-<script>
-$(document).ready(function(){
-//comment added;
-//$("#txtCid").focus();
-setTimeout(function() {
-$("#txtCid").trigger('click');
-},10);
-
-//Get Sponser
-$('#txtCid').on('input', function() {
-		var Cid=$("#txtCid").val();
-		
-		$.ajax({
-			 type:'post',
-			 url:'get-sponser.php',
-			 data: {'Cid':Cid},
-			 success: function(data)
-			 {	 
-			 
-				 $("#txtSponserName").html(data);
-				 
-			 }
-			
-		 });
-	
-} );
-$('#txtCid').on('click', function() {
-		var Cid=$("#txtCid").val();
-		
-		$.ajax({
-			 type:'post',
-			 url:'get-sponser.php',
-			 data: {'Cid':Cid},
-			 success: function(data)
-			 {	 
-			 		 
-				 $("#txtSponserName").html(data);
-				 
-			 }
-			
-		 });
-	
-} );
-
-//Admin Login Start.....
-   $("#btnRegister").click(function(){
-     
-	 var cid=$("#txtCid").val();
-     var name=$("#txtName").val(); 
-     var mobile=$("#txtMobile").val(); 
-     var aadhar=$("#txtAadhar").val(); 
-     
-		$.ajax({
-			 type:'post',
-			 url:'registration-action.php',
-			 data: {'action':'registration','cid':cid,'name':name,'mobile':mobile,'aadhar':aadhar},
-			 success: function(data)
-			 {	 
-			 
-				 alert(data);
-				 $("#btnRegister").html("Register");
-				 $("#error_disp_register").html(data); 
-				 $("#error_disp_register").slideDown("slow");
-				 $("#error_disp_register").slideUp(8000); 
-				 $("#txtCid").val("");
-                 $("#txtName").val(""); 
-                 $("#txtMobile").val(""); 
-                 $("#txtAadhar").val(""); 
-                 $("#txtCid").focus();
-				 
-			 }
-			
-		 });
-	
-  });
-//Admin Login End.....
-});
-</script>
-</head>
-<body>
-<div class="log-w3">
-<div class="w3layouts-main" style="background-color:#fec602">
-    <center>
-         <a href="https://www.mpmlife.com/"><img src="./logo.png" width="250px" /></a>
-         
-    </center><br><br>
-	<h2>Card Registration</h2>
-		                  <div class="form-group">
-							   Enter Sponser/Reference Card No *
-                               <input class="form-control" placeholder="Enter Sponser" name="txtCid" id="txtCid" type="text" value="<?php echo $sponser; ?>" />
-                               
-                         </div>
-                         <div id="txtSponserName" style="color:#000"></div>
-                         <br>
-                         <div class="form-group">
-							   Enter Name *
-                               <input class="form-control" placeholder="Enter Name" name="txtName" id="txtName" type="text" />
-                         </div>
-                         <div class="form-group">
-							   Enter Mobile Number *
-                               <input class="form-control" placeholder="Enter Sponser" name="txtMobile" id="txtMobile" type="text" />
-                         </div>
-                         <div class="form-group">
-							   Aadhar Number *
-                               <input class="form-control" placeholder="Enter Sponser" name="txtAadhar" id="txtAadhar" type="text" />
-                         </div>
-                                
-                                <div id="error_disp_register"></div>
-								<center>
-								<button type="button" id="btnRegister"  class="btn btn-lg btn-primary">Register</button>
-								</center><br>
-		<p>Allready have a Card ?<a href="index.php" style="color:#000">Login</a>
-		<br><br>
-	
-		</p>
-			Note - All (*) marked fileds are required.
-	
-</div>
-</div>
-	<br><br><br><br><br><br>
-<script src="js/bootstrap.js"></script>
-<script src="js/jquery.dcjqaccordion.2.7.js"></script>
-<script src="js/scripts.js"></script>
-<script src="js/jquery.slimscroll.js"></script>
-<script src="js/jquery.nicescroll.js"></script>
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="js/flot-chart/excanvas.min.js"></script><![endif]-->
-<script src="js/jquery.scrollTo.js"></script>
-</body>
-</html>
