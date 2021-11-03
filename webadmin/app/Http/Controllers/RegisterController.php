@@ -22,8 +22,8 @@ class RegisterController extends Controller
 
         );
 
-        echo"<pre>";
-        print_r($request->all());
+       // echo"<pre>";
+       // print_r($request->all());
 
         $user = new user;
         $user->name = $request['name'];
