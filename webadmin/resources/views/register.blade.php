@@ -63,33 +63,60 @@
                     <p class="text-center small">Enter your personal details to create account</p>
                   </div>
 
-                  <form class="row g-3 needs-validation" novalidate>
+                  <form class="row g-3 needs-validation" novalidate method="POST" action="{{url('/')}}/register">
+                    @csrf
+                   
+
                     <div class="col-12">
                       <label for="yourName" class="form-label">Your Name</label>
-                      <input type="text" name="name" class="form-control" id="yourName" required>
+                      <input type="text" name="name" class="form-control" id="yourName"  >
+                      <div class="col-12">
+                        <span class="text-danger">
+                          @error('name')
+                         {{$message}} 
+                              
+                          @enderror
+                        </span>
+                      </div>
                       <div class="invalid-feedback">Please, enter your name!</div>
                     </div>
 
                     <div class="col-12">
                       <label for="yourEmail" class="form-label">Your Email</label>
-                      <input type="email" name="email" class="form-control" id="yourEmail" required>
+                      <input type="email" name="email" class="form-control" id="yourEmail"  >
+
+                      <div class="col-12">
+                        <span class="text-danger">
+                          @error('email')
+                         {{$message}} 
+                              
+                          @enderror
+                        </span>
+                      </div>
+                      
                       <div class="invalid-feedback">Please enter a valid Email adddress!</div>
                     </div>
 
                     <div class="col-12">
-                      <label for="yourUsername" class="form-label">Username</label>
+                      <label for="yourMobile" class="form-label">Mobile</label>
                       <div class="input-group has-validation">
-                        <span class="input-group-text" id="inputGroupPrepend">@</span>
-                        <input type="text" name="username" class="form-control" id="yourUsername" required>
-                        <div class="invalid-feedback">Please choose a username.</div>
+                        
+                        <input type="number" name="mobile" class="form-control" id="yourMobile"  > 
+                        <div class="col-12">
+                          <span class="text-danger">
+                            @error('mobile')
+                           {{$message}} 
+                                
+                            @enderror
+                          </span>
+                        </div>
+                       
+                        <div class="invalid-feedback">Please Enter a Mobile number.</div>
+
                       </div>
                     </div>
 
-                    <div class="col-12">
-                      <label for="yourPassword" class="form-label">Password</label>
-                      <input type="password" name="password" class="form-control" id="yourPassword" required>
-                      <div class="invalid-feedback">Please enter your password!</div>
-                    </div>
+                    
 
                     <div class="col-12">
                       <div class="form-check">
@@ -114,7 +141,7 @@
                 <!-- You can delete the links only if you purchased the pro version. -->
                 <!-- Licensing information: https://bootstrapmade.com/license/ -->
                 <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
-                Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+                Designed by <a href="https://eshuzo.com/">Eshuzo Global Technologies</a>
               </div>
 
             </div>

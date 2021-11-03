@@ -138,7 +138,7 @@ return [
 
     'custom' => [
         'attribute-name' => [
-            'rule-name' => 'custom-message',
+            'mobile' => 'Enter a valid mobile number',
         ],
     ],
 

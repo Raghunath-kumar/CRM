@@ -16,6 +16,15 @@ use App\Http\Controllers\ProjectprogressController;
 Route::get('/dashboard',[DashboardController::class,'index']);
 Route::get('/',[LoginController::class,'index']);
 Route::get('/register',[RegisterController::class,'index']);
+Route::post('/register',[RegisterController::class,'userentry']);
+
+
+
+
+
+
+
+
 Route::get('/blankpage',[BlankController::class,'index']);
 Route::get('/role',[RoleController::class,'rolefunction']);
 Route::get('/manageuser',[ManageuserController::class,'managefunction']);
