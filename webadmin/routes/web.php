@@ -11,19 +11,16 @@ use App\Http\Controllers\LeadsController;
 use App\Http\Controllers\FollowupsController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\ProjectprogressController;
+use App\Http\Controllers\TableController;
+
+
+
 
 
 Route::get('/dashboard',[DashboardController::class,'index']);
 Route::get('/',[LoginController::class,'index']);
 Route::get('/register',[RegisterController::class,'index']);
 Route::post('/register',[RegisterController::class,'userentry']);
-
-
-
-
-
-
-
 
 Route::get('/blankpage',[BlankController::class,'index']);
 Route::get('/role',[RoleController::class,'rolefunction']);
@@ -32,3 +29,4 @@ Route::get('/leads',[LeadsController::class,'leadfunction']);
 Route::get('/followups',[FollowupsController::class,'followupsfunction']);
 Route::get('/projects',[ProjectsController::class,'projectsfunction']);
 Route::get('/projectprogressreport',[ProjectprogressController::class,'projectprogressfunction']);
+Route::get('/table',[TableController::class,'tablefunction']);
