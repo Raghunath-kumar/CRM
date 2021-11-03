@@ -32,12 +32,12 @@ class RegisterController extends Controller
 
         $newstring = substr($request['mobile'], -4);
         
-        $user->userid = 'esh'.mt_rand(10,100).$newstring;
+        $user->userid = ('esh'.mt_rand(10,100).$newstring);
         $user->save();
         
         // $lastDigit = $number % 10000;
            // 'esh'.mt_rand(10,100).
 
-       // return view('register');
+       /// return view('register');
     }
 }
